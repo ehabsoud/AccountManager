@@ -1,0 +1,38 @@
+@page "/accounts"
+@inject IAccountService AccountService
+
+<PageTitle>Accounts</PageTitle>
+
+<h1>Accounts</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Balance</th>
+            <th>Last Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var account in accounts)
+        {
+            <tr>
+                <td>@account.Name</td>
+                <td>@account.Balance</td>
+                <td>@account.LastUpdate</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<BankAccount> accounts = new List<BankAccount>();
+    
+    protected override void OnInitialized()
+    {
+        accounts = AccountService.GetAccounts();
+    }
+}
+
+
+

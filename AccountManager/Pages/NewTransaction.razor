@@ -1,0 +1,53 @@
+@page "/newtransaction"
+@inject IAccountService AccountService
+
+<PageTitle>Transaction</PageTitle>
+
+<h1>New Transaction</h1>
+
+<select @bind="selectedType">
+    <option>Deposit</option>
+    <option>Withdraw</option>
+    <option>Transfer</option>
+</select>
+
+<select @bind="selectedAccountId">
+    @foreach (var account in accounts)
+    {
+        <option value="@account.Id">@account.Name</option>
+    }
+</select>
+
+<input type="number" @bind="amount" />
+<button @onclick="ExecuteTransaction">Execute Transaction</button>
+
+@code {
+    private string selectedType = "Deposit";
+
+    private string selectedAccountId = "";
+
+    private decimal amount;
+
+    private List<BankAccount> accounts = new List<BankAccount>();
+    
+    protected override void OnInitialized()
+    {
+        accounts = AccountService.GetAccounts();
+    }
+
+    private void ExecuteTransaction()
+    {
+        if (selectedType == "Deposit")
+        {
+            AccountService.Deposit(Guid.Parse(selectedAccountId), amount);
+        }
+        else if (selectedType == "Withdraw")
+        {
+            AccountService.Withdraw(Guid.Parse(selectedAccountId), amount);
+        }
+        else if (selectedType == "Transfer")
+        {
+            AccountService.Transfer(Guid.Parse(selectedAccountId), Guid.Empty, amount);
+        }
+    }
+}
