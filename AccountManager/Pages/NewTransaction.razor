@@ -29,25 +29,30 @@
     private decimal amount;
 
     private List<BankAccount> accounts = new List<BankAccount>();
-    
-    protected override void OnInitialized()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        accounts = AccountService.GetAccounts();
+        if (firstRender)
+        {
+            await AccountService.InitializeAsync();
+            accounts = await AccountService.GetAccounts();
+            StateHasChanged();
+        }
     }
 
-    private void ExecuteTransaction()
+    private async Task ExecuteTransaction()
     {
         if (selectedType == "Deposit")
         {
-            AccountService.Deposit(Guid.Parse(selectedAccountId), amount);
+            await AccountService.Deposit(Guid.Parse(selectedAccountId), amount);
         }
         else if (selectedType == "Withdraw")
         {
-            AccountService.Withdraw(Guid.Parse(selectedAccountId), amount);
+            await AccountService.Withdraw(Guid.Parse(selectedAccountId), amount);
         }
         else if (selectedType == "Transfer")
         {
-            AccountService.Transfer(Guid.Parse(selectedAccountId), Guid.Empty, amount);
+            await AccountService.Transfer(Guid.Parse(selectedAccountId), Guid.Empty, amount);
         }
     }
 }

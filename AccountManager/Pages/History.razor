@@ -42,24 +42,29 @@
         set
         {
             _selectedAccountId = value;
-            LoadTransactions();
+            _ = LoadTransactions();
         }
     }
     
     private List<Transaction> transactions = new List<Transaction>();
 
     private List<BankAccount> accounts = new List<BankAccount>();
-    
-    protected override void OnInitialized()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        accounts = AccountService.GetAccounts();
+        if (firstRender)
+        {
+            await AccountService.InitializeAsync();
+            accounts = await AccountService.GetAccounts();
+            StateHasChanged();
+        }
     }
 
-    private void LoadTransactions()
+    private async Task LoadTransactions()
     {
         if (!string.IsNullOrEmpty(selectedAccountId))
         {
-            transactions = AccountService.GetTransactionHistory(Guid.Parse(selectedAccountId));
+            transactions = await AccountService.GetTransactionHistory(Guid.Parse(selectedAccountId));
         }
     }
 }

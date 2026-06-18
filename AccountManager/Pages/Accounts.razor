@@ -5,6 +5,14 @@
 
 <h1>Accounts</h1>
 
+<input type="text" @bind="newAccountName" placeholder="Account Name"/>
+
+<select @bind="selectedType">
+    <option>Savings</option>
+    <option>Checking</option>
+</select>
+<button @onclick="CreateAccount">Create Account</button>
+
 <table>
     <thead>
         <tr>
@@ -26,11 +34,33 @@
 </table>
 
 @code {
-    private List<BankAccount> accounts = new List<BankAccount>();
+    private string newAccountName = "";
+
+    private string selectedType = "Savings";
     
-    protected override void OnInitialized()
+    private List<BankAccount> accounts = new List<BankAccount>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        accounts = AccountService.GetAccounts();
+        if (firstRender)
+        {
+            await AccountService.InitializeAsync();
+            accounts = await AccountService.GetAccounts();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateAccount()
+    {
+        var account = new BankAccount()
+        {
+            Id = Guid.NewGuid(),
+            Name = newAccountName,
+            AccountType = Enum.Parse<AccountType>(selectedType)
+        };
+
+        await AccountService.CreateAccount(account);
+        accounts = await AccountService.GetAccounts();
     }
 }
 

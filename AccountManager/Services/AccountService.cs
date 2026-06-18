@@ -5,13 +5,31 @@ namespace AccountManager.Services;
 public class AccountService : IAccountService
 {
     private List<BankAccount> _accounts = new List<BankAccount>();
+
+    private bool _initialized = false;
     
-    public void CreateAccount(BankAccount account)
+    
+    private readonly IStorageService _storageService;
+    
+    public AccountService(IStorageService storageService)
     {
-        _accounts.Add(account);
+        _storageService = storageService;
     }
 
-    public void Deposit(Guid accountId, decimal amount)
+    public async Task InitializeAsync()
+    {
+        if (_initialized) return;
+        _initialized = true;
+        _accounts = await _storageService.LoadAccounts();
+    }
+    
+    public async Task CreateAccount(BankAccount account)
+    {
+        _accounts.Add(account);
+        await  _storageService.SaveAccounts(_accounts);
+    }
+
+    public async Task Deposit(Guid accountId, decimal amount)
     {
         var account = _accounts.FirstOrDefault(a => a.Id == accountId);
         
@@ -33,9 +51,10 @@ public class AccountService : IAccountService
         };
         
         account.TransactionHistory.Add(transaction);
+        await _storageService.SaveAccounts(_accounts);
     }
 
-    public void Withdraw(Guid accountId, decimal amount)
+    public async Task Withdraw(Guid accountId, decimal amount)
     {
         var account = _accounts.FirstOrDefault(a => a.Id == accountId);
 
@@ -62,9 +81,10 @@ public class AccountService : IAccountService
         };
         
         account.TransactionHistory.Add(transaction);
+        await _storageService.SaveAccounts(_accounts);
     }
 
-    public void Transfer(Guid fromAccountId, Guid toAccountId, decimal amount)
+    public async Task Transfer(Guid fromAccountId, Guid toAccountId, decimal amount)
     {
         var fromAccount = _accounts.FirstOrDefault(a => a.Id == fromAccountId);
 
@@ -116,9 +136,10 @@ public class AccountService : IAccountService
         };
         
         toAccount.TransactionHistory.Add(toTransaction);
+        await _storageService.SaveAccounts(_accounts);
     }
 
-    public List<Transaction> GetTransactionHistory(Guid accountId)
+    public Task<List<Transaction>> GetTransactionHistory(Guid accountId)
     {
         var account = _accounts.FirstOrDefault(a => a.Id == accountId);
 
@@ -126,11 +147,11 @@ public class AccountService : IAccountService
         {
             throw new Exception("Account not found");
         }
-        return account.TransactionHistory;
+        return Task.FromResult(account.TransactionHistory);
     }
 
-    public List<BankAccount> GetAccounts()
+    public Task<List<BankAccount>> GetAccounts()
     {
-        return _accounts;
+        return Task.FromResult(_accounts);
     }
 }

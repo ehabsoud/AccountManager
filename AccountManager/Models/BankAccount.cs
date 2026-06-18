@@ -18,6 +18,7 @@ public class BankAccount
     public BankAccount()
     {
         TransactionHistory = new List<Transaction>();
+        LastUpdate = DateTime.Now;
     }
 
 }
