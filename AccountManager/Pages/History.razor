@@ -6,6 +6,7 @@
 <h1>History</h1>
 
 <select @bind="selectedAccountId">
+    <option value="">Select account</option>
     @foreach (var account in accounts)
     {
         <option value="@account.Id">@account.Name</option>
@@ -66,5 +67,10 @@
         {
             transactions = await AccountService.GetTransactionHistory(Guid.Parse(selectedAccountId));
         }
+        else
+        {
+            transactions = new List<Transaction>();
+        }
+        StateHasChanged();
     }
 }

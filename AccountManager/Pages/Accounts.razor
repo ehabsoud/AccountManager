@@ -11,6 +11,11 @@
     <option>Savings</option>
     <option>Checking</option>
 </select>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <p style="color: red;">@errorMessage</p>
+}
 <button @onclick="CreateAccount">Create Account</button>
 
 <table>
@@ -19,6 +24,7 @@
             <th>Name</th>
             <th>Balance</th>
             <th>Last Updated</th>
+            <th>Account Type</th>
         </tr>
     </thead>
     <tbody>
@@ -28,6 +34,7 @@
                 <td>@account.Name</td>
                 <td>@account.Balance</td>
                 <td>@account.LastUpdate</td>
+                <td>@account.AccountType</td>
             </tr>
         }
     </tbody>
@@ -37,6 +44,8 @@
     private string newAccountName = "";
 
     private string selectedType = "Savings";
+
+    private string errorMessage = "";
     
     private List<BankAccount> accounts = new List<BankAccount>();
 
@@ -52,6 +61,14 @@
 
     private async Task CreateAccount()
     {
+        errorMessage = "";
+        
+        if (string.IsNullOrWhiteSpace(newAccountName))
+        {
+            errorMessage = "Account name can not be empty.";
+            return;
+        }
+        
         var account = new BankAccount()
         {
             Id = Guid.NewGuid(),
@@ -63,6 +80,3 @@
         accounts = await AccountService.GetAccounts();
     }
 }
-
-
-

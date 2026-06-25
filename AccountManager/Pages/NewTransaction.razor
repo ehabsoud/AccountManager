@@ -11,7 +11,9 @@
     <option>Transfer</option>
 </select>
 
+<p>From account</p>
 <select @bind="selectedAccountId">
+    <option value="">Select account</option>
     @foreach (var account in accounts)
     {
         <option value="@account.Id">@account.Name</option>
@@ -20,7 +22,9 @@
 
 @if (selectedType == "Transfer")
 {
+    <p>To account</p>
     <select @bind="selectedToAccountId">
+        <option value="">Select account</option>
         @foreach (var account in accounts)
         {
             <option value="@account.Id">@account.Name</option>
@@ -28,6 +32,12 @@
     </select>
 }
 
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <p style="color: red;">@errorMessage</p>
+}
+
+<p>Amount</p>
 <input type="number" @bind="amount" />
 <button @onclick="ExecuteTransaction">Execute Transaction</button>
 
@@ -37,6 +47,8 @@
     private string selectedAccountId = "";
     
     private string selectedToAccountId = "";
+
+    private string errorMessage = "";
 
     private decimal amount;
 
@@ -48,28 +60,44 @@
         {
             await AccountService.InitializeAsync();
             accounts = await AccountService.GetAccounts();
-            if (accounts.Any())
-            {
-                selectedAccountId = accounts.First().Id.ToString();
-                selectedToAccountId = accounts.First().Id.ToString();
-            }
             StateHasChanged();
         }
     }
 
     private async Task ExecuteTransaction()
     {
-        if (selectedType == "Deposit")
+        errorMessage = "";
+        
+        if (selectedType == "Transfer" && selectedAccountId == selectedToAccountId)
         {
-            await AccountService.Deposit(Guid.Parse(selectedAccountId), amount);
+            errorMessage = "Cannot transfer to the same account.";
+            return;
         }
-        else if (selectedType == "Withdraw")
+        
+        if (amount <= 0)
         {
-            await AccountService.Withdraw(Guid.Parse(selectedAccountId), amount);
+            errorMessage = "Amount must be greater than 0.";
+            return;
         }
-        else if (selectedType == "Transfer")
+
+        try
         {
-            await AccountService.Transfer(Guid.Parse(selectedAccountId), Guid.Parse(selectedToAccountId), amount);
+            if (selectedType == "Deposit")
+            {
+                await AccountService.Deposit(Guid.Parse(selectedAccountId), amount);
+            }
+            else if (selectedType == "Withdraw")
+            {
+                await AccountService.Withdraw(Guid.Parse(selectedAccountId), amount);
+            }
+            else if (selectedType == "Transfer")
+            {
+                await AccountService.Transfer(Guid.Parse(selectedAccountId), Guid.Parse(selectedToAccountId), amount);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
         }
     }
 }
