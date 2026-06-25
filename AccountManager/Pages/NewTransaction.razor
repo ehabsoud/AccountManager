@@ -18,6 +18,16 @@
     }
 </select>
 
+@if (selectedType == "Transfer")
+{
+    <select @bind="selectedToAccountId">
+        @foreach (var account in accounts)
+        {
+            <option value="@account.Id">@account.Name</option>
+        }
+    </select>
+}
+
 <input type="number" @bind="amount" />
 <button @onclick="ExecuteTransaction">Execute Transaction</button>
 
@@ -25,6 +35,8 @@
     private string selectedType = "Deposit";
 
     private string selectedAccountId = "";
+    
+    private string selectedToAccountId = "";
 
     private decimal amount;
 
@@ -36,6 +48,11 @@
         {
             await AccountService.InitializeAsync();
             accounts = await AccountService.GetAccounts();
+            if (accounts.Any())
+            {
+                selectedAccountId = accounts.First().Id.ToString();
+                selectedToAccountId = accounts.First().Id.ToString();
+            }
             StateHasChanged();
         }
     }
@@ -52,7 +69,7 @@
         }
         else if (selectedType == "Transfer")
         {
-            await AccountService.Transfer(Guid.Parse(selectedAccountId), Guid.Empty, amount);
+            await AccountService.Transfer(Guid.Parse(selectedAccountId), Guid.Parse(selectedToAccountId), amount);
         }
     }
 }
