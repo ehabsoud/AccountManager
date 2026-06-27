@@ -4,7 +4,6 @@
 <PageTitle>History</PageTitle>
 
 <h1>History</h1>
-
 <select @bind="selectedAccountId">
     <option value="">Select account</option>
     @foreach (var account in accounts)
@@ -12,6 +11,28 @@
         <option value="@account.Id">@account.Name</option>
     }
 </select>
+
+<input type="date" @bind="startDate" />
+<input type="date" @bind="endDate" />
+
+<select @bind="selectedTransactionType">
+    <option value="">All types</option>
+    <option value="Deposit">Deposit</option>
+    <option value="Withdraw">Withdraw</option>
+    <option value="Transfer">Transfer</option>
+</select>
+
+<select @bind="sortBy">
+    <option value="date">Date</option>
+    <option value="amount">Amount</option>
+</select>
+
+<select @bind="sortDirection">
+    <option value="asc">Ascending</option>
+    <option value="desc">Descending</option>
+</select>
+
+<button @onclick="ApplyFilter">Apply</button>
 
 <table>
     <thead>
@@ -36,6 +57,12 @@
 </table>
 
 @code {
+    private DateTime startDate = DateTime.Now.AddYears(-1);
+    private DateTime endDate = DateTime.Now;
+    private string selectedTransactionType = "";
+    private string sortBy = "date";
+    private string sortDirection = "asc";
+    
     private string _selectedAccountId = "";
     private string selectedAccountId
     {
@@ -65,12 +92,38 @@
     {
         if (!string.IsNullOrEmpty(selectedAccountId))
         {
-            transactions = await AccountService.GetTransactionHistory(Guid.Parse(selectedAccountId));
+            var allTransactions = await AccountService.GetTransactionHistory(Guid.Parse(selectedAccountId));
+
+            var filtered = allTransactions
+                .Where(t => t.Date.Date >= startDate.Date && t.Date.Date <= endDate.Date);
+
+            if (!string.IsNullOrEmpty(selectedTransactionType))
+            {
+                filtered = filtered.Where(t => t.TransactionType.ToString() == selectedTransactionType);
+            }
+
+            if (sortBy == "date")
+                transactions = sortDirection == "asc"
+                    ? filtered.OrderBy(t => t.Date).ToList()
+                    : filtered.OrderByDescending(t => t.Date).ToList();
+            else
+                transactions = sortDirection == "asc"
+                    ? filtered.OrderBy(t => t.Amount).ToList()
+                    : filtered.OrderByDescending(t => t.Amount).ToList();
         }
         else
         {
             transactions = new List<Transaction>();
         }
         StateHasChanged();
+    }
+
+    private void ApplyFilter()
+    {
+        if (startDate > endDate)
+        {
+            (startDate, endDate) = (endDate, startDate);
+        }
+        _ = LoadTransactions();
     }
 }
