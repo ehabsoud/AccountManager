@@ -67,6 +67,18 @@
     private async Task ExecuteTransaction()
     {
         errorMessage = "";
+
+        if (string.IsNullOrEmpty(selectedAccountId))
+        {
+            errorMessage = "Please select an account.";
+            return;
+        }
+
+        if (selectedType == "Transfer" && string.IsNullOrEmpty(selectedToAccountId))
+        {
+            errorMessage = "Please select a destination account.";
+            return;
+        }
         
         if (selectedType == "Transfer" && selectedAccountId == selectedToAccountId)
         {
