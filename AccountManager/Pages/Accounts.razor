@@ -37,7 +37,7 @@
         {
             <tr>
                 <td>@account.Name</td>
-                <td>@account.Balance</td>
+                <td>@account.Balance @account.CurrencyType</td>
                 <td>@account.LastUpdate</td>
                 <td>@account.AccountType</td>
             </tr>
@@ -81,7 +81,8 @@
         {
             Id = Guid.NewGuid(),
             Name = newAccountName,
-            AccountType = Enum.Parse<AccountType>(selectedType)
+            AccountType = Enum.Parse<AccountType>(selectedType),
+            CurrencyType = CurrencyType.SEK
         };
 
         await AccountService.CreateAccount(account);

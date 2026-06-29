@@ -26,7 +26,9 @@ public class AccountService : IAccountService
     public async Task CreateAccount(BankAccount account)
     {
         _accounts.Add(account);
-        await  _storageService.SaveAccounts(_accounts);
+        await _storageService.SaveAccounts(_accounts);
+        
+        Console.WriteLine($"Account created: {account.Name} ({account.Id})");
     }
 
     public async Task Deposit(Guid accountId, decimal amount)
@@ -52,6 +54,8 @@ public class AccountService : IAccountService
         
         account.TransactionHistory.Add(transaction);
         await _storageService.SaveAccounts(_accounts);
+
+        Console.WriteLine($"Deposited {amount} into {account.Name} ({account.Id}). New balance: {account.Balance} SEK");
     }
 
     public async Task Withdraw(Guid accountId, decimal amount)
@@ -82,6 +86,8 @@ public class AccountService : IAccountService
         
         account.TransactionHistory.Add(transaction);
         await _storageService.SaveAccounts(_accounts);
+        
+        Console.WriteLine($"Withdrew {amount} from {account.Name} ({account.Id}). New balance: {account.Balance} SEK");
     }
 
     public async Task Transfer(Guid fromAccountId, Guid toAccountId, decimal amount)
@@ -137,6 +143,9 @@ public class AccountService : IAccountService
         
         toAccount.TransactionHistory.Add(toTransaction);
         await _storageService.SaveAccounts(_accounts);
+        
+        Console.WriteLine($"Transferred {amount} SEK from {fromAccount.Name} to {toAccount.Name}. " +
+                          $"New balances: {fromAccount.Balance} SEK / {toAccount.Balance} SEK");
     }
 
     public Task<List<Transaction>> GetTransactionHistory(Guid accountId)
