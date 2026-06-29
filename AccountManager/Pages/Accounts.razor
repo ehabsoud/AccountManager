@@ -16,6 +16,11 @@
 {
     <p style="color: red;">@errorMessage</p>
 }
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <p style="color: green;">@successMessage</p>
+}
 <button @onclick="CreateAccount">Create Account</button>
 
 <table>
@@ -46,6 +51,8 @@
     private string selectedType = "Savings";
 
     private string errorMessage = "";
+
+    private string successMessage = "";
     
     private List<BankAccount> accounts = new List<BankAccount>();
 
@@ -62,6 +69,7 @@
     private async Task CreateAccount()
     {
         errorMessage = "";
+        successMessage = "";
         
         if (string.IsNullOrWhiteSpace(newAccountName))
         {
@@ -78,5 +86,8 @@
 
         await AccountService.CreateAccount(account);
         accounts = await AccountService.GetAccounts();
+
+        successMessage = $"Account '{newAccountName}' successfully created!";
+        newAccountName = "";
     }
 }
