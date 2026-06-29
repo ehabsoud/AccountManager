@@ -37,6 +37,11 @@
     <p style="color: red;">@errorMessage</p>
 }
 
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <p style="color: green;">@successMessage</p>
+}
+
 <p>Amount</p>
 <input type="number" @bind="amount" />
 <button @onclick="ExecuteTransaction">Execute Transaction</button>
@@ -49,6 +54,8 @@
     private string selectedToAccountId = "";
 
     private string errorMessage = "";
+    
+    private string successMessage = "";
 
     private decimal amount;
 
@@ -106,6 +113,9 @@
             {
                 await AccountService.Transfer(Guid.Parse(selectedAccountId), Guid.Parse(selectedToAccountId), amount);
             }
+
+            successMessage = $"{selectedType} of {amount} SEK was successful!";
+            amount = 0;
         }
         catch (Exception ex)
         {
